@@ -29,7 +29,7 @@ const LANDING_HTML = `<!DOCTYPE html>
         .nav-links { display: flex; gap: 20px; align-items: center; }
         .nav-links a { color: var(--cream); text-decoration: none; font-size: 14px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; }
         .nav-links a:hover { opacity: 0.8; }
-        .github-link { display: inline-flex; align-items: center; gap: 6px; background: var(--forest-green); color: var(--cream); padding: 8px 16px; border-radius: 6px; font-weight: 600; }
+        .github-link { display: inline-flex; align-items: center; gap: 6px; background: var(--forest-green); color: #FFFFFF; padding: 8px 16px; border-radius: 6px; font-weight: 600; }
         
         .github-link svg { vertical-align: middle; }
         .nav-btn { background: var(--golden-yellow); color: var(--near-black); padding: 8px 16px; border-radius: 4px; font-weight: 600; font-size: 14px; text-transform: uppercase; }
