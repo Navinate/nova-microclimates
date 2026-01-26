@@ -1,6 +1,6 @@
 /**
  * SF Microclimates API - Cloudflare Worker
- * Real-time temperature & humidity data for San Francisco neighborhoods
+ * Real-time temperature, humidity & air quality data for San Francisco neighborhoods
  * Powered by PurpleAir sensor data
  */
 
@@ -39,7 +39,7 @@ const LANDING_HTML = `<!DOCTYPE html>
 <body>
     <div class="hero">
         <h1>SF Microclimates API</h1>
-        <p>Real-time temperature & humidity data for San Francisco neighborhoods via PurpleAir sensors</p>
+        <p>Real-time temperature, humidity & air quality data for San Francisco neighborhoods via PurpleAir sensors</p>
     </div>
 
     <div class="container">
@@ -51,6 +51,9 @@ const LANDING_HTML = `<!DOCTYPE html>
   "name": "Mission District",
   "temp_f": 68,
   "humidity": 45,
+  "pm2_5": 8.2,
+  "aqi": 34,
+  "aqi_category": "Good",
   "sensor_count": 29
 }</code></pre>
 
@@ -64,7 +67,8 @@ const LANDING_HTML = `<!DOCTYPE html>
         <p>Use <code>GET /neighborhoods</code> for the full list.</p>
 
         <h2>About</h2>
-        <p>San Francisco is famous for its microclimates. This API aggregates data from 400+ PurpleAir sensors to give you real temperature readings by neighborhood.</p>
+        <p>San Francisco is famous for its microclimates. This API aggregates data from 400+ PurpleAir sensors to give you real temperature and air quality readings by neighborhood.</p>
+        <p>AQI (Air Quality Index) is calculated using the US EPA formula from PM2.5 sensor data.</p>
         <p>Free to use. No API key required.</p>
     </div>
 
@@ -141,17 +145,50 @@ interface PurpleAirSensor {
   longitude: number;
   temperature?: number;
   humidity?: number;
+  pm2_5?: number;
 }
 
 interface NeighborhoodData {
   temp_f: number | null;
   humidity: number | null;
+  pm2_5: number | null;
+  aqi: number | null;
+  aqi_category: string | null;
   sensor_count: number;
 }
 
 interface WeatherResponse {
   updated: string;
   neighborhoods: Record<string, NeighborhoodData>;
+}
+
+// AQI Calculation using US EPA formula
+// Source: https://community.purpleair.com/t/how-to-calculate-the-us-epa-pm2-5-aqi/877
+function calcAQI(Cp: number, Ih: number, Il: number, BPh: number, BPl: number): number {
+  return Math.round(((Ih - Il) / (BPh - BPl)) * (Cp - BPl) + Il);
+}
+
+function aqiFromPM25(pm: number): number {
+  if (pm < 0) return 0;
+  if (pm > 350.5) return calcAQI(pm, 500, 401, 500.4, 350.5);
+  if (pm > 250.5) return calcAQI(pm, 400, 301, 350.4, 250.5);
+  if (pm > 150.5) return calcAQI(pm, 300, 201, 250.4, 150.5);
+  if (pm > 55.5)  return calcAQI(pm, 200, 151, 150.4, 55.5);
+  if (pm > 35.5)  return calcAQI(pm, 150, 101, 55.4, 35.5);
+  if (pm > 12.1)  return calcAQI(pm, 100, 51, 35.4, 12.1);
+  if (pm >= 0)    return calcAQI(pm, 50, 0, 12, 0);
+  return 0;
+}
+
+type AQICategory = "Good" | "Moderate" | "Unhealthy for Sensitive Groups" | "Unhealthy" | "Very Unhealthy" | "Hazardous";
+
+function getAQICategory(aqi: number): AQICategory {
+  if (aqi <= 50) return "Good";
+  if (aqi <= 100) return "Moderate";
+  if (aqi <= 150) return "Unhealthy for Sensitive Groups";
+  if (aqi <= 200) return "Unhealthy";
+  if (aqi <= 300) return "Very Unhealthy";
+  return "Hazardous";
 }
 
 function isInBounds(lat: number, lng: number, bounds: { nwLat: number; nwLng: number; seLat: number; seLng: number }): boolean {
@@ -172,10 +209,10 @@ function getDistance(lat1: number, lng1: number, lat2: number, lng2: number): nu
 function findNearestNeighborhood(targetKey: string, availableKeys: string[]): string | null {
   if (availableKeys.length === 0) return null;
   const targetCenter = getNeighborhoodCenter(SF_NEIGHBORHOODS[targetKey].bounds);
-  
+
   let nearest: string | null = null;
   let minDistance = Infinity;
-  
+
   for (const key of availableKeys) {
     const center = getNeighborhoodCenter(SF_NEIGHBORHOODS[key].bounds);
     const distance = getDistance(targetCenter.lat, targetCenter.lng, center.lat, center.lng);
@@ -189,7 +226,7 @@ function findNearestNeighborhood(targetKey: string, availableKeys: string[]): st
 
 function findNearestNeighborhoods(targetKey: string, availableKeys: string[], count: number): string[] {
   const targetCenter = getNeighborhoodCenter(SF_NEIGHBORHOODS[targetKey].bounds);
-  
+
   const distances = availableKeys
     .filter(k => k !== targetKey)
     .map(key => {
@@ -200,7 +237,7 @@ function findNearestNeighborhoods(targetKey: string, availableKeys: string[], co
       };
     })
     .sort((a, b) => a.distance - b.distance);
-  
+
   return distances.slice(0, count).map(d => d.key);
 }
 
@@ -208,30 +245,30 @@ const OUTLIER_THRESHOLD_F = 10; // Flag if >10°F different from neighbors
 const OUTLIER_MIN_NEIGHBORS = 3; // Need at least 3 neighbors to compare
 
 function detectAndCorrectOutliers(neighborhoods: Record<string, NeighborhoodData>): Record<string, NeighborhoodData> {
-  const keysWithData = Object.keys(neighborhoods).filter(k => 
+  const keysWithData = Object.keys(neighborhoods).filter(k =>
     neighborhoods[k].sensor_count > 0 && neighborhoods[k].temp_f !== null
   );
-  
+
   const result: Record<string, NeighborhoodData> = { ...neighborhoods };
-  
+
   for (const key of keysWithData) {
     const data = neighborhoods[key];
     if (data.temp_f === null) continue;
-    
+
     // Find nearest neighbors with data
     const nearestKeys = findNearestNeighborhoods(key, keysWithData, OUTLIER_MIN_NEIGHBORS);
     if (nearestKeys.length < OUTLIER_MIN_NEIGHBORS) continue;
-    
+
     // Calculate neighbor average
     const neighborTemps = nearestKeys
       .map(k => neighborhoods[k].temp_f)
       .filter((t): t is number => t !== null);
-    
+
     if (neighborTemps.length < OUTLIER_MIN_NEIGHBORS) continue;
-    
+
     const neighborAvg = neighborTemps.reduce((a, b) => a + b, 0) / neighborTemps.length;
     const diff = Math.abs(data.temp_f - neighborAvg);
-    
+
     // If outlier detected AND low sensor count, correct it
     if (diff > OUTLIER_THRESHOLD_F && data.sensor_count <= 2) {
       const correctedTemp = Math.round(neighborAvg);
@@ -247,7 +284,7 @@ function detectAndCorrectOutliers(neighborhoods: Record<string, NeighborhoodData
       } as NeighborhoodData & { outlier_corrected: object };
     }
   }
-  
+
   return result;
 }
 
@@ -259,7 +296,7 @@ function assignToNeighborhood(lat: number, lng: number): string | null {
 }
 
 async function fetchPurpleAirData(apiKey: string): Promise<PurpleAirSensor[]> {
-  const fields = "sensor_index,latitude,longitude,temperature,humidity";
+  const fields = "sensor_index,latitude,longitude,temperature,humidity,pm2.5_10minute";
   const url = `https://api.purpleair.com/v1/sensors?fields=${fields}&location_type=0&nwlat=${SF_BOUNDS.nwLat}&nwlng=${SF_BOUNDS.nwLng}&selat=${SF_BOUNDS.seLat}&selng=${SF_BOUNDS.seLng}`;
 
   const response = await fetch(url, { headers: { "X-API-Key": apiKey } });
@@ -274,14 +311,15 @@ async function fetchPurpleAirData(apiKey: string): Promise<PurpleAirSensor[]> {
     latitude: row[fieldIndices.latitude] as number,
     longitude: row[fieldIndices.longitude] as number,
     temperature: row[fieldIndices.temperature] as number | undefined,
-    humidity: row[fieldIndices.humidity] as number | undefined
+    humidity: row[fieldIndices.humidity] as number | undefined,
+    pm2_5: row[fieldIndices["pm2.5_10minute"]] as number | undefined
   }));
 }
 
 function aggregateByNeighborhood(sensors: PurpleAirSensor[]): Record<string, NeighborhoodData> {
-  const neighborhoodSensors: Record<string, { temps: number[]; humidities: number[] }> = {};
+  const neighborhoodSensors: Record<string, { temps: number[]; humidities: number[]; pm2_5s: number[] }> = {};
   for (const key of Object.keys(SF_NEIGHBORHOODS)) {
-    neighborhoodSensors[key] = { temps: [], humidities: [] };
+    neighborhoodSensors[key] = { temps: [], humidities: [], pm2_5s: [] };
   }
 
   for (const sensor of sensors) {
@@ -292,6 +330,9 @@ function aggregateByNeighborhood(sensors: PurpleAirSensor[]): Record<string, Nei
       }
       if (sensor.humidity !== undefined && sensor.humidity !== null) {
         neighborhoodSensors[neighborhood].humidities.push(sensor.humidity);
+      }
+      if (sensor.pm2_5 !== undefined && sensor.pm2_5 !== null && sensor.pm2_5 >= 0) {
+        neighborhoodSensors[neighborhood].pm2_5s.push(sensor.pm2_5);
       }
     }
   }
@@ -305,7 +346,20 @@ function aggregateByNeighborhood(sensors: PurpleAirSensor[]): Record<string, Nei
     const avgHumidity = data.humidities.length > 0
       ? Math.round(data.humidities.reduce((a, b) => a + b, 0) / data.humidities.length)
       : null;
-    result[key] = { temp_f: avgTemp, humidity: avgHumidity, sensor_count: data.temps.length };
+    const avgPM25 = data.pm2_5s.length > 0
+      ? Math.round((data.pm2_5s.reduce((a, b) => a + b, 0) / data.pm2_5s.length) * 10) / 10
+      : null;
+    const aqi = avgPM25 !== null ? aqiFromPM25(avgPM25) : null;
+    const aqiCategory = aqi !== null ? getAQICategory(aqi) : null;
+
+    result[key] = {
+      temp_f: avgTemp,
+      humidity: avgHumidity,
+      pm2_5: avgPM25,
+      aqi,
+      aqi_category: aqiCategory,
+      sensor_count: data.temps.length
+    };
   }
   return result;
 }
@@ -321,10 +375,10 @@ async function getWeatherData(env: Env): Promise<WeatherResponse> {
 
   const sensors = await fetchPurpleAirData(env.PURPLEAIR_API_KEY);
   const rawNeighborhoods = aggregateByNeighborhood(sensors);
-  
+
   // Detect and correct outliers (e.g., single bad sensor reading 14°F off from neighbors)
   const neighborhoods = detectAndCorrectOutliers(rawNeighborhoods);
-  
+
   const response: WeatherResponse = { updated: new Date().toISOString(), neighborhoods };
 
   if (env.CACHE) {
@@ -383,14 +437,14 @@ export default {
           return errorResponse(`Unknown neighborhood: ${neighborhoodKey}`, 404);
         }
         const data = await getWeatherData(env);
-        
+
         // Check if this neighborhood has sensor data
         const neighborhoodData = data.neighborhoods[neighborhoodKey];
         if (neighborhoodData.sensor_count === 0) {
           // Find nearest neighborhood with data
           const availableKeys = Object.keys(data.neighborhoods).filter(k => data.neighborhoods[k].sensor_count > 0);
           const nearestKey = findNearestNeighborhood(neighborhoodKey, availableKeys);
-          
+
           if (nearestKey) {
             const nearestData = data.neighborhoods[nearestKey];
             return jsonResponse({
@@ -399,6 +453,9 @@ export default {
               name: SF_NEIGHBORHOODS[neighborhoodKey].name,
               temp_f: nearestData.temp_f,
               humidity: nearestData.humidity,
+              pm2_5: nearestData.pm2_5,
+              aqi: nearestData.aqi,
+              aqi_category: nearestData.aqi_category,
               sensor_count: 0,
               fallback: {
                 source_neighborhood: nearestKey,
@@ -409,7 +466,7 @@ export default {
             });
           }
         }
-        
+
         return jsonResponse({
           updated: data.updated,
           neighborhood: neighborhoodKey,
