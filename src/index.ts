@@ -187,6 +187,70 @@ function findNearestNeighborhood(targetKey: string, availableKeys: string[]): st
   return nearest;
 }
 
+function findNearestNeighborhoods(targetKey: string, availableKeys: string[], count: number): string[] {
+  const targetCenter = getNeighborhoodCenter(SF_NEIGHBORHOODS[targetKey].bounds);
+  
+  const distances = availableKeys
+    .filter(k => k !== targetKey)
+    .map(key => {
+      const center = getNeighborhoodCenter(SF_NEIGHBORHOODS[key].bounds);
+      return {
+        key,
+        distance: getDistance(targetCenter.lat, targetCenter.lng, center.lat, center.lng)
+      };
+    })
+    .sort((a, b) => a.distance - b.distance);
+  
+  return distances.slice(0, count).map(d => d.key);
+}
+
+const OUTLIER_THRESHOLD_F = 10; // Flag if >10°F different from neighbors
+const OUTLIER_MIN_NEIGHBORS = 3; // Need at least 3 neighbors to compare
+
+function detectAndCorrectOutliers(neighborhoods: Record<string, NeighborhoodData>): Record<string, NeighborhoodData> {
+  const keysWithData = Object.keys(neighborhoods).filter(k => 
+    neighborhoods[k].sensor_count > 0 && neighborhoods[k].temp_f !== null
+  );
+  
+  const result: Record<string, NeighborhoodData> = { ...neighborhoods };
+  
+  for (const key of keysWithData) {
+    const data = neighborhoods[key];
+    if (data.temp_f === null) continue;
+    
+    // Find nearest neighbors with data
+    const nearestKeys = findNearestNeighborhoods(key, keysWithData, OUTLIER_MIN_NEIGHBORS);
+    if (nearestKeys.length < OUTLIER_MIN_NEIGHBORS) continue;
+    
+    // Calculate neighbor average
+    const neighborTemps = nearestKeys
+      .map(k => neighborhoods[k].temp_f)
+      .filter((t): t is number => t !== null);
+    
+    if (neighborTemps.length < OUTLIER_MIN_NEIGHBORS) continue;
+    
+    const neighborAvg = neighborTemps.reduce((a, b) => a + b, 0) / neighborTemps.length;
+    const diff = Math.abs(data.temp_f - neighborAvg);
+    
+    // If outlier detected AND low sensor count, correct it
+    if (diff > OUTLIER_THRESHOLD_F && data.sensor_count <= 2) {
+      const correctedTemp = Math.round(neighborAvg);
+      result[key] = {
+        ...data,
+        temp_f: correctedTemp,
+        outlier_corrected: {
+          original_temp_f: data.temp_f,
+          neighbor_avg_f: Math.round(neighborAvg),
+          diff_f: Math.round(diff),
+          reason: `Single sensor reading ${data.temp_f}°F was ${Math.round(diff)}°F off from neighbors (avg ${Math.round(neighborAvg)}°F)`
+        }
+      } as NeighborhoodData & { outlier_corrected: object };
+    }
+  }
+  
+  return result;
+}
+
 function assignToNeighborhood(lat: number, lng: number): string | null {
   for (const [key, neighborhood] of Object.entries(SF_NEIGHBORHOODS)) {
     if (isInBounds(lat, lng, neighborhood.bounds)) return key;
@@ -256,7 +320,11 @@ async function getWeatherData(env: Env): Promise<WeatherResponse> {
   }
 
   const sensors = await fetchPurpleAirData(env.PURPLEAIR_API_KEY);
-  const neighborhoods = aggregateByNeighborhood(sensors);
+  const rawNeighborhoods = aggregateByNeighborhood(sensors);
+  
+  // Detect and correct outliers (e.g., single bad sensor reading 14°F off from neighbors)
+  const neighborhoods = detectAndCorrectOutliers(rawNeighborhoods);
+  
   const response: WeatherResponse = { updated: new Date().toISOString(), neighborhoods };
 
   if (env.CACHE) {
