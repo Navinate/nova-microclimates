@@ -45,9 +45,12 @@ No API key. No signup. Just use it.
 
 ## Add to Claude Code or Clawdbot
 
-Create a skill file to give your AI agent hyperlocal SF weather awareness:
+Copy and paste this into your skills folder:
 
 ```markdown
+# Create a new skill: sf-microclimates/SKILL.md
+
+
 # SF Microclimates Skill
 
 Get real-time SF neighborhood weather.
