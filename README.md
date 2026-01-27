@@ -7,6 +7,8 @@
 
 🌐 **Live API:** [microclimates.solofounders.com](https://microclimates.solofounders.com)
 
+**Example website:** [view weather in all regions of San Francisco](https://microclimates.solofounders.com/all)
+
 Use with [Claude Code](https://docs.anthropic.com/en/docs/claude-code), [Clawdbot](https://clawd.bot), or build into your apps.
 
 Built by [Solo Founders](https://solofounders.com).
