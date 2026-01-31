@@ -1,27 +1,15 @@
-# SF Microclimates API
+# Nova Microclimates API
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
 [![Free API](https://img.shields.io/badge/API-Free%20to%20use-blue.svg)](https://microclimates.solofounders.com)
 
-**Real weather for 50 San Francisco neighborhoods. Free API. No key required.**
-
-🌐 **Live API:** [microclimates.solofounders.com](https://microclimates.solofounders.com)
+**Real weather for Northen Virginia. Free API. No key required.**
 
 **Example website:** [view weather in all regions of San Francisco](https://microclimates.solofounders.com/all)
 
 Use with [Claude Code](https://docs.anthropic.com/en/docs/claude-code), [Clawdbot](https://clawd.bot), or build into your apps.
 
-Built by [Solo Founders](https://solofounders.com).
-
----
-
-## Why This Exists
-
-SF has the most dramatic microclimates of any US city.
-
-Weather apps say "San Francisco: 58°F" — but that's useless. It can be 52°F and foggy in the Outer Sunset while it's 65°F and sunny in the Mission, just 3 miles apart.
-
-This API aggregates 150+ outdoor sensors and groups them by neighborhood, so you get *actual* local temperatures — not some airport reading from SFO.
+See forked repo for more info
 
 ---
 
@@ -93,18 +81,6 @@ north_beach, pacific_heights, potrero, twin_peaks...
 | `GET /sf-weather` | All 50 neighborhoods |
 | `GET /sf-weather/:neighborhood` | Single neighborhood |
 | `GET /neighborhoods` | List all available |
-
----
-
-## 50 Neighborhoods
-
-From Marina to Noe Valley, Presidio to Twin Peaks — every SF neighborhood mapped.
-
-```bash
-curl https://microclimates.solofounders.com/neighborhoods
-```
-
-Includes: `mission`, `castro`, `marina`, `soma`, `haight`, `noe_valley`, `outer_sunset`, `inner_richmond`, `north_beach`, `pacific_heights`, `potrero`, `dogpatch`, `bayview`, `twin_peaks`, `presidio`, `tenderloin`, `chinatown`, `japantown`, `cole_valley`, `glen_park`, and 30 more.
 
 ---
 
