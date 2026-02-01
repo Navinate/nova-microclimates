@@ -43,7 +43,7 @@ const LANDING_HTML = `<!DOCTYPE html>
 
     <div class="container">
         <h2>Quick Start</h2>
-        <pre><code>curl /nova-weather/
+        <pre><code>curl /nova-weather/burke
         {
           "updated": "2026-02-01T02:17:51.867Z",
           "neighborhood": "burke",
