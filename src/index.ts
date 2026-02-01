@@ -10,72 +10,230 @@ export interface Env {
     RATE_LIMITER: RateLimit;
 }
 
-const LANDING_HTML = `<!DOCTYPE html>
+const LANDING_HTML = `<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NoVA Microclimates API</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f5f5; color: #333; line-height: 1.6; }
-        .container { max-width: 800px; margin: 0 auto; padding: 40px 24px; }
-        h1 { font-size: 2.5rem; margin-bottom: 0.5rem; }
-        h2 { font-size: 1.5rem; margin: 2rem 0 1rem; color: #444; }
-        p { margin-bottom: 1rem; }
-        pre { background: #1a1a1a; color: #f0f0f0; padding: 16px; border-radius: 8px; overflow-x: auto; font-size: 14px; margin: 1rem 0; }
-        code { font-family: 'SF Mono', Monaco, Consolas, monospace; }
-        .endpoint { background: white; padding: 12px 16px; border-radius: 6px; margin: 8px 0; display: flex; justify-content: space-between; }
-        .endpoint-path { font-family: monospace; font-weight: 600; }
-        .endpoint-desc { color: #666; }
-        .hero { background: #2563eb; color: white; padding: 60px 24px; text-align: center; }
-        .hero h1 { color: white; }
-        .hero p { color: rgba(255,255,255,0.9); max-width: 500px; margin: 0 auto; }
-        footer { text-align: center; padding: 40px; color: #666; font-size: 14px; }
-        a { color: #2563eb; }
-    </style>
-</head>
-<body>
-    <div class="hero">
-        <h1>NoVA Microclimates API</h1>
-        <p>Real-time temperature, humidity & air quality data for Northern Virginia via PurpleAir sensors</p>
-    </div>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>NoVA Microclimates API</title>
+        <style>
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+            body {
+                font-family:
+                    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+                    sans-serif;
+                background: burlywood;
+                color: #202020;
+                line-height: 1.6;
+            }
+            .container {
+                max-width: 800px;
+                margin: 0 auto;
+                padding: 40px 24px;
+            }
+            h1 {
+                font-size: 2.5rem;
+                margin-bottom: 0.5rem;
+            }
+            h2 {
+                font-size: 1.5rem;
+                margin: 2rem 0 1rem;
+                color: #202020;
+            }
+            p {
+                margin-bottom: 1rem;
+            }
+            pre {
+                background: #333333;
+                color: #f0f0f0;
+                padding: 16px;
+                border-radius: 8px;
+                overflow-x: auto;
+                font-size: 14px;
+                margin: 1rem 0;
+            }
+            code {
+                font-family: monospace;
+            }
+            .endpoint {
+                background: whitesmoke;
+                padding: 12px 16px;
+                border-radius: 6px;
+                margin: 8px 0;
+                display: flex;
+                justify-content: space-between;
+            }
+            .endpoint-path {
+                font-family: monospace;
+                font-weight: 600;
+            }
+            .endpoint-desc {
+                color: #666;
+            }
+            .hero {
+                background: forestgreen;
+                color: whitesmoke;
+                padding: 60px 24px;
+                text-align: center;
+            }
+            .hero h1 {
+                color: whitesmoke;
+            }
+            .hero p {
+                color: rgba(255, 255, 255, 0.9);
+                max-width: 500px;
+                margin: 0 auto;
+            }
+            footer {
+                text-align: center;
+                padding: 40px;
+                color: #666;
+                font-size: 14px;
+            }
+            a {
+                color: #2563eb;
+            }
 
-    <div class="container">
-        <h2>Quick Start</h2>
-        <pre><code>curl /nova-weather/burke
-        {
-          "updated": "2026-02-01T02:17:51.867Z",
-          "neighborhood": "burke",
-          "name": "Burke",
-          "temp_f": 17,
-          "humidity": 42,
-          "pm2_5": 4.9,
-          "aqi": 20,
-          "aqi_category": "Good",
-          "sensor_count": 3
-        }</code></pre>
+            .areas {
+                display: flex;
+                flex-direction: row;
+                flex-wrap: wrap;
+                gap: 4px;
+                margin-bottom: 16px;
+                justify-content: space-around;
+            }
+            .pill {
+                border-radius: 100vmin;
+                padding: 2px 8px;
+                color: whitesmoke;
+            }
+            .arlington {
+                background-color: hsl(204, 84%, 25%);
+            }
+            .fairfax {
+                background-color: hsl(204deg 73% 45%);
+            }
+        </style>
+    </head>
+    <body>
+        <div class="hero">
+            <h1>NoVA Microclimates API</h1>
+            <p>
+                Real-time temperature, humidity & air quality data for Northern
+                Virginia via PurpleAir sensors
+            </p>
+        </div>
 
-        <h2>Endpoints</h2>
-        <div class="endpoint"><span class="endpoint-path">GET /nova-weather</span><span class="endpoint-desc">All areas</span></div>
-        <div class="endpoint"><span class="endpoint-path">GET /nova-weather/:area</span><span class="endpoint-desc">Single area</span></div>
-        <div class="endpoint"><span class="endpoint-path">GET /areas</span><span class="endpoint-desc">List all available</span></div>
+        <div class="container">
+            <h2>Quick Start</h2>
+            <pre><code>curl /nova-weather/burke
+                {
+                "updated": "2026-02-01T02:17:51.867Z",
+                "neighborhood": "burke",
+                "name": "Burke",
+                "temp_f": 17,
+                "humidity": 42,
+                "pm2_5": 4.9,
+                "aqi": 20,
+                "aqi_category": "Good",
+                "sensor_count": 3
+                }</code></pre>
 
-        <h2>Available Areas</h2>
-        <p>LIST AREAS HERE</p>
-        <p>Use <code>GET /areas</code> for the full list.</p>
+            <h2>Endpoints</h2>
+            <div class="endpoint">
+                <span class="endpoint-path">GET /nova-weather</span
+                ><span class="endpoint-desc">All areas</span>
+            </div>
+            <div class="endpoint">
+                <span class="endpoint-path">GET /nova-weather/:area</span
+                ><span class="endpoint-desc">Single area</span>
+            </div>
+            <div class="endpoint">
+                <span class="endpoint-path">GET /areas</span
+                ><span class="endpoint-desc">List all available</span>
+            </div>
 
-        <h2>About</h2>
-        <p>Forked from <a href="https://github.com/solo-founders/sf-microclimates">SF Microclimates API</a></p>
-        <p>AQI (Air Quality Index) is calculated using the US EPA formula from PM2.5 sensor data.</p>
-        <p>Free to use. No API key required.</p>
-    </div>
+            <h2>Available Areas</h2>
+            <div class="areas">
+                <span class="pill fairfax">Oakton</span>
+                <span class="pill arlington">Cherrydale</span>
+                <span class="pill fairfax">Burke</span>
+                <span class="pill fairfax">Hybla Valley</span>
+                <span class="pill arlington">Ballston</span>
+                <span class="pill fairfax">Mason Neck</span>
+                <span class="pill fairfax">Lorton</span>
+                <span class="pill arlington">Pentagon</span>
+                <span class="pill fairfax">Falls Church</span>
+                <span class="pill fairfax">Herndon</span>
+                <span class="pill arlington">Columbia Pike</span>
+                <span class="pill fairfax">Kingstowne</span>
+                <span class="pill fairfax">Fairfax Station</span>
+                <span class="pill arlington">Westover</span>
+                <span class="pill fairfax">Great Falls</span>
+                <span class="pill fairfax">Mount Vernon</span>
+                <span class="pill arlington">Rosslyn</span>
+                <span class="pill fairfax">Seven Corners</span>
+                <span class="pill fairfax">Chantilly</span>
+                <span class="pill arlington">Crystal City</span>
+                <span class="pill fairfax">Wolf Trap</span>
+                <span class="pill fairfax">Annandale</span>
+                <span class="pill arlington">Virginia Square</span>
+                <span class="pill fairfax">Fort Hunt</span>
+                <span class="pill fairfax">Reston</span>
+                <span class="pill arlington">Shirlington</span>
+                <span class="pill fairfax">Dunn Loring</span>
+                <span class="pill fairfax">Mantua</span>
+                <span class="pill fairfax">Clifton</span>
+                <span class="pill arlington">Bluemont</span>
+                <span class="pill fairfax">Tysons</span>
+                <span class="pill fairfax">Springfield</span>
+                <span class="pill arlington">Courthouse</span>
+                <span class="pill fairfax">Vienna</span>
+                <span class="pill fairfax">Fair Oaks</span>
+                <span class="pill fairfax">Bailey's Crossroads</span>
+                <span class="pill fairfax">West Springfield</span>
+                <span class="pill arlington">East Falls Church</span>
+                <span class="pill fairfax">Woodlawn</span>
+                <span class="pill fairfax">McLean</span>
+                <span class="pill fairfax">Franconia</span>
+                <span class="pill arlington">Aurora Highlands</span>
+                <span class="pill fairfax">Rose Hill</span>
+                <span class="pill fairfax">Centreville</span>
+                <span class="pill fairfax">Newington</span>
+                <span class="pill fairfax">Lake Barcroft</span>
+                <span class="pill arlington">Pentagon City</span>
+                <span class="pill fairfax">Kings Park</span>
+                <span class="pill fairfax">Merrifield</span>
+                <span class="pill fairfax">Pimmit Hills</span>
+                <span class="pill fairfax">Fort Belvoir</span>
+                <span class="pill arlington">Clarendon</span>
+                <span class="pill fairfax">Huntington</span>
+                <span class="pill fairfax">Fairfax City</span>
+            </div>
+            <h2>About</h2>
+            <p>
+                Forked from
+                <a href="https://github.com/solo-founders/sf-microclimates"
+                    >SF Microclimates API</a
+                >
+            </p>
+            <p>
+                AQI (Air Quality Index) is calculated using the US EPA formula
+                from PM2.5 sensor data.
+            </p>
+            <p>Free to use. No API key required.</p>
+        </div>
 
-    <footer>
-        <p>Powered by <a href="https://www.purpleair.com/">PurpleAir</a></p>
-    </footer>
-</body>
-</html>`;
+        <footer>
+            <p>Powered by <a href="https://www.purpleair.com/">PurpleAir</a></p>
+        </footer>
+    </body>
+</html>
+`;
 
 const NOVA_AREAS: Record<
     string,
