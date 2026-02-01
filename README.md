@@ -16,7 +16,7 @@ See forked repo for more info
 ## Try It Instantly
 
 ```bash
-curl https://microclimates.solofounders.com/sf-weather/mission
+curl https://microclimates.solofounders.com/nova-weather/mission
 ```
 
 ```json
@@ -41,20 +41,20 @@ No API key. No signup. Just use it.
 Copy and paste this into your skills folder:
 
 ```markdown
-# Create a new skill: sf-microclimates/SKILL.md
+# Create a new skill: nova-microclimates/SKILL.md
 
 
-# SF Microclimates Skill
+# NOVA Microclimates Skill
 
 Get real-time SF neighborhood weather.
 
 ## Triggers
 - "weather in [neighborhood]"
-- "sf weather mission vs sunset"
+- "nova weather mission vs sunset"
 - "is it foggy in the richmond?"
 
 ## Usage
-curl https://microclimates.solofounders.com/sf-weather/marina
+curl https://microclimates.solofounders.com/nova-weather/burke
 
 ## Neighborhoods
 mission, castro, marina, soma, haight, noe_valley,
@@ -78,8 +78,8 @@ north_beach, pacific_heights, potrero, twin_peaks...
 
 | Endpoint | Description |
 |----------|-------------|
-| `GET /sf-weather` | All 50 neighborhoods |
-| `GET /sf-weather/:neighborhood` | Single neighborhood |
+| `GET /nova-weather` | All 50 neighborhoods |
+| `GET /nova-weather/:neighborhood` | Single neighborhood |
 | `GET /neighborhoods` | List all available |
 
 ---
@@ -156,11 +156,6 @@ Want to run your own instance?
 
 ### 1. Clone & Install
 
-```bash
-git clone https://github.com/solo-founders/sf-microclimates.git
-cd sf-microclimates
-npm install
-```
 
 ### 2. Get a PurpleAir API Key
 

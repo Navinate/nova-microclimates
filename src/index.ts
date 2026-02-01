@@ -701,7 +701,7 @@ function aggregateByArea(sensors: PurpleAirSensor[]): Record<string, AreaData> {
 }
 
 async function getWeatherData(env: Env): Promise<WeatherResponse> {
-    const cacheKey = "sf-weather-data";
+    const cacheKey = "NOVA-MICROCLIMATE-CACHE";
     const cacheTtl = parseInt(env.CACHE_TTL_SECONDS || "900", 10);
 
     if (env.CACHE) {
@@ -841,7 +841,7 @@ export default {
             }
 
             return errorResponse(
-                "Not found. Try /sf-weather or /sf-weather/:area",
+                "Not found. Try /nova-weather or /nova-weather/:area",
                 404,
             );
         } catch (error) {
