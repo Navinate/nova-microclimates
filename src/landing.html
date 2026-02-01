@@ -1,381 +1,150 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SF Microclimates API</title>
-    <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --forest-green: #10604D;
-            --cream: #FAF5E6;
-            --golden-yellow: #EABD38;
-            --sage: #DBEDC4;
-            --light-teal: #ECFBF5;
-            --near-black: #171717;
-        }
-        
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: 'Inter', -apple-system, sans-serif;
-            background: var(--cream);
-            color: var(--near-black);
-            line-height: 1.6;
-        }
-        
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 60px 24px;
-        }
-        
-        /* Hero */
-        .hero {
-            background: var(--forest-green);
-            color: #FFFFFF;
-            padding: 80px 24px;
-            text-align: center;
-        }
-        
-        .hero h1 {
-            font-family: 'Instrument Serif', serif;
-            font-size: clamp(48px, 10vw, 72px);
-            font-weight: 400;
-            margin-bottom: 16px;
-            line-height: 1.1;
-            color: #FFFFFF;
-        }
-        
-        .hero p {
-            font-size: 20px;
-            max-width: 500px;
-            margin: 0 auto;
-            color: #FFFFFF;
-        }
-        
-        /* Section */
-        section {
-            padding: 60px 0;
-        }
-        
-        h2 {
-            font-family: 'Instrument Serif', serif;
-            font-size: 36px;
-            font-weight: 400;
-            margin-bottom: 24px;
-            color: var(--forest-green);
-        }
-        
-        h3 {
-            font-size: 18px;
-            font-weight: 600;
-            margin-bottom: 12px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            color: var(--forest-green);
-        }
-        
-        p {
-            margin-bottom: 16px;
-        }
-        
-        /* Code blocks */
-        pre {
-            background: var(--near-black);
-            color: var(--cream);
-            padding: 20px;
-            border-radius: 8px;
-            overflow-x: auto;
-            font-size: 14px;
-            line-height: 1.5;
-            margin: 16px 0;
-        }
-        
-        code {
-            font-family: 'SF Mono', Monaco, monospace;
-        }
-        
-        .inline-code {
-            background: var(--light-teal);
-            padding: 2px 8px;
-            border-radius: 4px;
-            font-size: 14px;
-        }
-        
-        /* Cards */
-        .card {
-            background: white;
-            border-radius: 12px;
-            padding: 32px;
-            margin: 24px 0;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-        }
-        
-        .card-green {
-            background: var(--forest-green);
-            color: var(--cream);
-        }
-        
-        .card-green h3 {
-            color: var(--sage);
-        }
-        
-        /* Endpoints grid */
-        .endpoints {
-            display: grid;
-            gap: 16px;
-            margin: 24px 0;
-        }
-        
-        .endpoint {
-            background: var(--light-teal);
-            padding: 16px 20px;
-            border-radius: 8px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 8px;
-        }
-        
-        .endpoint-path {
-            font-family: 'SF Mono', Monaco, monospace;
-            font-weight: 600;
-            color: var(--forest-green);
-        }
-        
-        .endpoint-desc {
-            color: #666;
-            font-size: 14px;
-        }
-        
-        /* Button */
-        .btn {
-            display: inline-block;
-            background: var(--golden-yellow);
-            color: var(--near-black);
-            padding: 14px 28px;
-            border-radius: 6px;
-            text-decoration: none;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            font-size: 14px;
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-        
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        }
-        
-        /* Live demo */
-        .live-demo {
-            background: var(--sage);
-            padding: 40px 24px;
-            text-align: center;
-        }
-        
-        .demo-result {
-            background: white;
-            max-width: 400px;
-            margin: 24px auto;
-            padding: 24px;
-            border-radius: 12px;
-            text-align: left;
-            font-family: 'SF Mono', Monaco, monospace;
-            font-size: 14px;
-        }
-        
-        /* Footer */
-        footer {
-            background: var(--forest-green);
-            color: var(--cream);
-            padding: 40px 24px;
-            text-align: center;
-        }
-        
-        footer a {
-            color: var(--sage);
-        }
-        
-        /* Neighborhood pills */
-        .neighborhoods {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin: 16px 0;
-        }
-        
-        .pill {
-            background: var(--light-teal);
-            color: var(--forest-green);
-            padding: 6px 14px;
-            border-radius: 20px;
-            font-size: 13px;
-            font-weight: 500;
-        }
-        
-        /* Nav */
-        .nav {
-            background: var(--forest-green);
-            padding: 16px 24px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .nav-logo img {
-            height: 32px;
-            width: auto;
-        }
-        
-        .nav-github {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            color: #FFFFFF;
-            text-decoration: none;
-            font-weight: 600;
-            font-size: 14px;
-            letter-spacing: 0.5px;
-        }
-        
-        .nav-github svg {
-            width: 24px;
-            height: 24px;
-            fill: #FFFFFF;
-        }
-    </style>
-</head>
-<body>
-    <nav class="nav">
-        <a href="https://solofounders.com" class="nav-logo">
-            <img src="data:image/jpeg;base64,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" alt="SOLO" />
-        </a>
-    </nav>
-    <div class="hero">
-        <h1>SF Microclimates</h1>
-        <p>Real-time temperature & humidity data for 49 San Francisco neighborhoods via PurpleAir sensors</p>
-    </div>
-    
-    <div class="container">
-        <section>
-            <h2>Quick Start</h2>
-            <p>Get weather data for any SF neighborhood with a simple API call:</p>
-            <pre><code>curl https://microclimates.solofounders.com/sf-weather/mission
-
-{
-  "neighborhood": "mission",
-  "name": "Mission District",
-  "temp_f": 71,
-  "humidity": 40,
-  "sensor_count": 29
-}</code></pre>
-        </section>
-        
-        <section>
-            <h2>Endpoints</h2>
-            <div class="endpoints">
-                <div class="endpoint">
-                    <span class="endpoint-path">/sf-weather</span>
-                    <span class="endpoint-desc">All neighborhoods</span>
-                </div>
-                <div class="endpoint">
-                    <span class="endpoint-path">/sf-weather/:neighborhood</span>
-                    <span class="endpoint-desc">Single neighborhood</span>
-                </div>
-                <div class="endpoint">
-                    <span class="endpoint-path">/neighborhoods</span>
-                    <span class="endpoint-desc">List all available</span>
-                </div>
-            </div>
-        </section>
-        
-        <section>
-            <h2>Neighborhoods</h2>
-            <p>49 neighborhoods mapped with 400+ sensors:</p>
-            <div class="neighborhoods">
-                <span class="pill">mission</span>
-                <span class="pill">castro</span>
-                <span class="pill">marina</span>
-                <span class="pill">soma</span>
-                <span class="pill">haight</span>
-                <span class="pill">noe_valley</span>
-                <span class="pill">outer_sunset</span>
-                <span class="pill">inner_richmond</span>
-                <span class="pill">north_beach</span>
-                <span class="pill">pacific_heights</span>
-                <span class="pill">potrero</span>
-                <span class="pill">bayview</span>
-                <span class="pill">twin_peaks</span>
-                <span class="pill">cole_valley</span>
-                <span class="pill">presidio</span>
-                <span class="pill">+ 34 more</span>
-            </div>
-        </section>
-        
-        <div class="card card-green">
-            <h3>Add to Claude Code or Clawdbot</h3>
-            <p>Copy and paste this into your skills folder:</p>
-            <pre><code># Create a new skill: sf-microclimates/SKILL.md
-
-
-# SF Microclimates Skill
-
-Get hyperlocal SF weather data.
-
-## Triggers
-- "weather in [neighborhood]"
-- "sf weather mission vs sunset"
-- "is it foggy in the richmond?"
-
-## Usage
-```bash
-# Single neighborhood
-curl https://microclimates.solofounders.com/sf-weather/marina
-
-# Compare (fetch both)
-curl https://microclimates.solofounders.com/sf-weather/mission
-curl https://microclimates.solofounders.com/sf-weather/sunset
-```
-
-## Neighborhoods
-mission, castro, marina, soma, haight, noe_valley, 
-outer_sunset, inner_sunset, outer_richmond, inner_richmond,
-presidio, north_beach, russian_hill, pacific_heights,
-potrero, dogpatch, bayview, bernal, glen_park, twin_peaks,
-cole_valley, tenderloin, chinatown, japantown, nob_hill,
-telegraph_hill, sea_cliff, west_portal, diamond_heights,
-hayes_valley, lower_haight, mission_bay, embarcadero, + more
-
-## Response Format
-```json
-{
-  "neighborhood": "mission",
-  "name": "Mission District",
-  "temp_f": 71,
-  "humidity": 40,
-  "sensor_count": 29
-}
-```</code></pre>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>NoVA Microclimates API</title>
+        <style>
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+            body {
+                font-family:
+                    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+                    sans-serif;
+                background: #f5f5f5;
+                color: #333;
+                line-height: 1.6;
+            }
+            .container {
+                max-width: 800px;
+                margin: 0 auto;
+                padding: 40px 24px;
+            }
+            h1 {
+                font-size: 2.5rem;
+                margin-bottom: 0.5rem;
+            }
+            h2 {
+                font-size: 1.5rem;
+                margin: 2rem 0 1rem;
+                color: #444;
+            }
+            p {
+                margin-bottom: 1rem;
+            }
+            pre {
+                background: #1a1a1a;
+                color: #f0f0f0;
+                padding: 16px;
+                border-radius: 8px;
+                overflow-x: auto;
+                font-size: 14px;
+                margin: 1rem 0;
+            }
+            code {
+                font-family: "SF Mono", Monaco, Consolas, monospace;
+            }
+            .endpoint {
+                background: white;
+                padding: 12px 16px;
+                border-radius: 6px;
+                margin: 8px 0;
+                display: flex;
+                justify-content: space-between;
+            }
+            .endpoint-path {
+                font-family: monospace;
+                font-weight: 600;
+            }
+            .endpoint-desc {
+                color: #666;
+            }
+            .hero {
+                background: #2563eb;
+                color: white;
+                padding: 60px 24px;
+                text-align: center;
+            }
+            .hero h1 {
+                color: white;
+            }
+            .hero p {
+                color: rgba(255, 255, 255, 0.9);
+                max-width: 500px;
+                margin: 0 auto;
+            }
+            footer {
+                text-align: center;
+                padding: 40px;
+                color: #666;
+                font-size: 14px;
+            }
+            a {
+                color: #2563eb;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="hero">
+            <h1>NoVA Microclimates API</h1>
+            <p>
+                Real-time temperature, humidity & air quality data for Northern
+                Virginia via PurpleAir sensors
+            </p>
         </div>
-        
-        <section>
-            <h2>Why Microclimates?</h2>
-            <p>San Francisco is famous for its microclimates. It can be 65°F and sunny in the Mission while 52°F and foggy in the Sunset — just 3 miles apart.</p>
-            <p>This API aggregates data from 400+ PurpleAir sensors across the city, giving you real temperature readings by neighborhood — not just a single "San Francisco" number.</p>
-        </section>
-    </div>
-    
-    <footer>
-        <p>Built by <a href="https://solofounders.com">Solo Founders</a> · Powered by <a href="https://www.purpleair.com/">PurpleAir</a></p>
-        <p style="margin-top: 12px; opacity: 0.7; font-size: 14px;">Free to use · No API key required</p>
-    </footer>
-</body>
+
+        <div class="container">
+            <h2>Quick Start</h2>
+            <pre><code>curl /nova-weather/
+        {
+          "updated": "2026-02-01T02:17:51.867Z",
+          "neighborhood": "burke",
+          "name": "Burke",
+          "temp_f": 17,
+          "humidity": 42,
+          "pm2_5": 4.9,
+          "aqi": 20,
+          "aqi_category": "Good",
+          "sensor_count": 3
+        }</code></pre>
+
+            <h2>Endpoints</h2>
+            <div class="endpoint">
+                <span class="endpoint-path">GET /nova-weather</span
+                ><span class="endpoint-desc">All areas</span>
+            </div>
+            <div class="endpoint">
+                <span class="endpoint-path">GET /nova-weather/:area</span
+                ><span class="endpoint-desc">Single area</span>
+            </div>
+            <div class="endpoint">
+                <span class="endpoint-path">GET /areas</span
+                ><span class="endpoint-desc">List all available</span>
+            </div>
+
+            <h2>Available Areas</h2>
+            <p>LIST AREAS HERE</p>
+            <p>Use <code>GET /areas</code> for the full list.</p>
+
+            <h2>About</h2>
+            <p>
+                Forked from
+                <a href="https://github.com/solo-founders/sf-microclimates"
+                    >SF Microclimates API</a
+                >
+            </p>
+            <p>
+                AQI (Air Quality Index) is calculated using the US EPA formula
+                from PM2.5 sensor data.
+            </p>
+            <p>Free to use. No API key required.</p>
+        </div>
+
+        <footer>
+            <p>Powered by <a href="https://www.purpleair.com/">PurpleAir</a></p>
+        </footer>
+    </body>
 </html>
