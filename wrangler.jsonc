@@ -18,7 +18,7 @@
     ],
     "kv_namespaces": [
         {
-            "binding": "NOVA_MICROCLIMATE_CACHE",
+            "binding": "CACHE",
             "id": "b7e7187519f24f0fa197614213ceacfe",
         },
     ],
@@ -28,4 +28,10 @@
             "custom_domain": true,
         },
     ],
+    "observability": {
+        "logs": {
+            "enabled": true,
+            "invocation_logs": true,
+        },
+    },
 }

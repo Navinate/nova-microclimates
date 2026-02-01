@@ -877,9 +877,8 @@ async function getWeatherData(env: Env): Promise<WeatherResponse> {
         updated: new Date().toISOString(),
         areas,
     };
-
     if (env.CACHE) {
-        await env.CACHE.put(cacheKey, JSON.stringify(response), {
+        const result = await env.CACHE.put(cacheKey, JSON.stringify(response), {
             expirationTtl: cacheTtl,
         });
     }
